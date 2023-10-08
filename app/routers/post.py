@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 @router.get('/')
-def get_posts(db: Session = Depends(get_db)):
+def get_posts(db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""SELECT * FROM posts""")   ----------------------------------------------------by sql
     # post = cursor.fetchall() # fetchall to retrive multiple posts, # fetchone to retrive 1 post 
     posts = db.query(models.Post).all()
@@ -19,12 +19,12 @@ def get_posts(db: Session = Depends(get_db)):
 
 @router.post('/', status_code=status.HTTP_201_CREATED)
 def create_posts(post: schemas.PostCreate,db: Session = Depends(get_db),
-                 user_id: int = Depends(oauth2.get_current_user)):
+                 current_user: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *""",(post.title, post.content, post.published))
     # # %s = variable, place holders (order matters)
     # new_post = cursor.fetchone()
     # conn.commit()-----------------------------------------------------------------------------------by sql
-    print(user_id)
+    print(current_user.email)
     new_post =models.Post(**post.dict())
     print(new_post)
     # new_post = models.Post(title = post.title, content = post.content, published = post.published)
@@ -36,7 +36,7 @@ def create_posts(post: schemas.PostCreate,db: Session = Depends(get_db),
     return new_post
 
 @router.get('/{id}')
-def get_post(id: int, db: Session = Depends(get_db)):
+def get_post(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""Select * from posts where id = 1""", (str(id),))
     # post = cursor.fetchone()-----------------------------------------------by sql
     post = db.query(models.Post).filter(models.Post.id == id).first()
@@ -46,7 +46,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
     return  post
 
 @router.delete('/{id}', status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db)):
+def delete_post(id: int, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
 
     # cursor.execute(""" delete from posts where id = %s returning *""", (str(id),))
     # deleted_post = cursor.fetchone()
@@ -61,7 +61,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.put("/{id}")
-def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db)):
+def update_post(id: int, updated_post: schemas.PostCreate, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
     # cursor.execute("""Update posts SET title = %s,content = %s, published = %s where id = %s returning *""",
     #                (post.title, post.content, post.published, str(id)))
     
